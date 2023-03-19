@@ -2,3 +2,7 @@
 
 pub mod render;
 pub mod svg;
+
+mod error;
+
+pub use error::{Error, Result};

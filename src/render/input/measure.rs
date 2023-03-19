@@ -1,7 +1,10 @@
 use smufl::StaffSpaces;
 
 use super::{duration, Barline, Chord, Duration, Note, Rest};
-use crate::render::{Render, Renderer};
+use crate::{
+    render::{Render, Renderer},
+    Result,
+};
 
 const BEGINNING_OF_MEASURE_SPACE: StaffSpaces = StaffSpaces(2.0);
 const END_OF_MEASURE_SPACE: StaffSpaces = StaffSpaces(2.0);
@@ -53,7 +56,11 @@ impl Element {
 }
 
 impl Render for Element {
-    fn render(&self, x: smufl::StaffSpaces, metadata: &smufl::Metadata) -> crate::render::Output {
+    fn render(
+        &self,
+        x: smufl::StaffSpaces,
+        metadata: &smufl::Metadata,
+    ) -> Result<crate::render::Output> {
         match self {
             Element::Note(note) => note.render(x, metadata),
             Element::Chord(chord) => chord.render(x, metadata),
@@ -63,16 +70,18 @@ impl Render for Element {
 }
 
 impl Measure {
-    pub fn render(&self, renderer: &mut Renderer) {
+    pub fn render(&self, renderer: &mut Renderer) -> Result<()> {
         renderer.advance(BEGINNING_OF_MEASURE_SPACE);
 
         for element in &self.elements {
-            renderer.render(element);
+            renderer.render(element)?;
             renderer.advance(element.spacing());
         }
 
         renderer.advance(END_OF_MEASURE_SPACE);
 
-        renderer.render(&self.bar_line);
+        renderer.render(&self.bar_line)?;
+
+        Ok(())
     }
 }

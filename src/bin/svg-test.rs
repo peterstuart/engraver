@@ -11,10 +11,11 @@ use engraver::{
         Rest, Staff, TimeSignature,
     },
     svg::{elements_to_svg_document, Options},
+    Result,
 };
 use smufl::{Glyph, StaffSpaces};
 
-fn main() {
+fn main() -> Result<()> {
     let cargo_manifest_dir =
         env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR must be set");
     let root_path = Path::new(&cargo_manifest_dir);
@@ -95,7 +96,7 @@ fn main() {
         ],
     };
 
-    let elements = staff.render(&metadata);
+    let elements = staff.render(&metadata)?;
 
     let options = Options {
         symbol_font_name: metadata.font_name.clone(),
@@ -112,4 +113,6 @@ fn main() {
 
     let mut file = File::create(&output_path).unwrap();
     file.write_all(svg.as_bytes()).unwrap();
+
+    Ok(())
 }

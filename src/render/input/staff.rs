@@ -4,7 +4,7 @@ use super::{Clef, KeySignature, Measure, TimeSignature};
 use crate::render::{
     engraving_defaults_extensions::EngravingDefaultsExtensions,
     ir::{Coord, Element, Line, Linecap},
-    Renderer,
+    Renderer, Result,
 };
 
 const BEGINNING_OF_STAFF_SPACE: StaffSpaces = StaffSpaces(1.0);
@@ -23,33 +23,33 @@ pub struct Staff {
 }
 
 impl Staff {
-    pub fn render(&self, metadata: &Metadata) -> Vec<Element<StaffSpaces>> {
+    pub fn render(&self, metadata: &Metadata) -> Result<Vec<Element<StaffSpaces>>> {
         let mut renderer = Renderer::new(metadata);
 
         renderer.advance(BEGINNING_OF_STAFF_SPACE);
 
         if let Some(clef) = &self.clef {
-            renderer.render(clef);
+            renderer.render(clef)?;
             renderer.advance(SPACE_AFTER_CLEF);
         }
 
         if let Some(key_signature) = &self.key_signature {
-            renderer.render(key_signature);
+            renderer.render(key_signature)?;
             renderer.advance(SPACE_AFTER_KEY_SIGNATURE);
         }
 
         if let Some(time_signature) = &self.time_signature {
-            renderer.render(time_signature);
+            renderer.render(time_signature)?;
             renderer.advance(SPACE_AFTER_TIME_SIGNATURE);
         }
 
         for measure in &self.measures {
-            measure.render(&mut renderer);
+            measure.render(&mut renderer)?;
         }
 
         renderer.add_elements(Self::staff_lines(renderer.position(), metadata));
 
-        renderer.to_elements()
+        Ok(renderer.to_elements())
     }
 
     fn staff_lines(length: StaffSpaces, metadata: &Metadata) -> Vec<Element<StaffSpaces>> {

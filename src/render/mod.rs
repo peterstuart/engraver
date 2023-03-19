@@ -2,6 +2,7 @@ pub mod input;
 pub mod ir;
 
 mod engraving_defaults_extensions;
+mod glyph_data_extensions;
 mod math;
 mod metadata_extensions;
 mod stem_direction;
@@ -9,9 +10,10 @@ mod stem_direction;
 use smufl::{Metadata, StaffSpaces};
 
 use self::{ir::Element, stem_direction::StemDirection};
+use crate::Result;
 
 pub trait Render {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Output;
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output>;
 }
 
 #[derive(Clone, Debug)]
@@ -41,13 +43,13 @@ impl<'m> Renderer<'m> {
         self
     }
 
-    pub fn render<T: Render>(&mut self, render: &T) -> &mut Self {
-        let mut output = render.render(self.position, self.metadata);
+    pub fn render<T: Render>(&mut self, render: &T) -> Result<&mut Self> {
+        let mut output = render.render(self.position, self.metadata)?;
 
         self.elements.append(&mut output.elements);
         self.position += output.width;
 
-        self
+        Ok(self)
     }
 
     pub fn advance(&mut self, width: StaffSpaces) -> &mut Self {

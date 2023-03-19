@@ -1,12 +1,16 @@
 use smufl::{Glyph, Metadata, StaffSpaces};
 
 use super::{duration, Accidental, Duration};
-use crate::render::{
-    engraving_defaults_extensions::EngravingDefaultsExtensions,
-    ir::{Coord, Element, Line, Linecap, Polygon, Size, Symbol},
-    metadata_extensions::MetadataExtensions,
-    stem_direction::StemDirection,
-    Output, Render,
+use crate::{
+    render::{
+        engraving_defaults_extensions::EngravingDefaultsExtensions,
+        glyph_data_extensions::GlyphDataExtensions,
+        ir::{Coord, Element, Line, Linecap, Polygon, Size, Symbol},
+        metadata_extensions::MetadataExtensions,
+        stem_direction::StemDirection,
+        Output, Render,
+    },
+    Result,
 };
 
 pub const DEFAULT_ACCIDENTAL_SPACING: StaffSpaces = StaffSpaces(0.3);
@@ -20,19 +24,19 @@ pub struct Note {
 }
 
 impl Render for Note {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> crate::render::Output {
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
         let glyph = self.duration.value.notehead_glyph();
 
         let notehead = create_notehead(x, self.y, glyph);
 
         let mut elements = vec![notehead];
 
-        let mut leger_lines = create_leger_lines(x, self.y, glyph, metadata);
+        let mut leger_lines = create_leger_lines(x, self.y, glyph, metadata)?;
         elements.append(&mut leger_lines);
 
         if let Some(accidental) = self.accidental {
             let glyph = accidental.glyph();
-            let accidental = create_accidental(x, self.y, glyph, metadata);
+            let accidental = create_accidental(x, self.y, glyph, metadata)?;
             elements.push(accidental);
         }
 
@@ -49,7 +53,7 @@ impl Render for Note {
                     StemDirection::Down => self.y - DEFAULT_STEM_LENGTH,
                 };
 
-                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata);
+                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata)?;
                 elements.push(flag);
             }
 
@@ -60,13 +64,13 @@ impl Render for Note {
                 stem_direction,
                 glyph,
                 metadata,
-            );
+            )?;
             elements.push(stem);
         }
 
-        let width = metadata.width_of(glyph);
+        let width = metadata.width_of(glyph)?;
 
-        Output { elements, width }
+        Ok(Output { elements, width })
     }
 }
 
@@ -82,9 +86,9 @@ pub fn create_leger_lines(
     y: StaffSpaces,
     glyph: Glyph,
     metadata: &Metadata,
-) -> Vec<Element<StaffSpaces>> {
+) -> Result<Vec<Element<StaffSpaces>>> {
     if y >= StaffSpaces(0.0) && y <= StaffSpaces(4.0) {
-        return vec![];
+        return Ok(vec![]);
     }
 
     let (num_lines, y, increment) = if y >= StaffSpaces(4.0) {
@@ -98,9 +102,10 @@ pub fn create_leger_lines(
     };
 
     let left_x = x + metadata.engraving_defaults.leger_line_extension() * -1.0;
-    let right_x = x + metadata.width_of(glyph) + metadata.engraving_defaults.leger_line_extension();
+    let right_x =
+        x + metadata.width_of(glyph)? + metadata.engraving_defaults.leger_line_extension();
 
-    (0..num_lines)
+    Ok((0..num_lines)
         .map(|num| {
             let y = y + increment * (num as f64);
             Element::Line(Line {
@@ -110,7 +115,7 @@ pub fn create_leger_lines(
                 cap: Linecap::Round,
             })
         })
-        .collect()
+        .collect())
 }
 
 pub fn create_accidental(
@@ -118,13 +123,13 @@ pub fn create_accidental(
     y: StaffSpaces,
     accidental_glyph: Glyph,
     metadata: &Metadata,
-) -> Element<StaffSpaces> {
-    let x = x - DEFAULT_ACCIDENTAL_SPACING - metadata.width_of(accidental_glyph);
+) -> Result<Element<StaffSpaces>> {
+    let x = x - DEFAULT_ACCIDENTAL_SPACING - metadata.width_of(accidental_glyph)?;
 
-    Element::Symbol(Symbol {
+    Ok(Element::Symbol(Symbol {
         origin: Coord { x, y },
         value: accidental_glyph.codepoint(),
-    })
+    }))
 }
 
 pub fn create_flag(
@@ -134,8 +139,8 @@ pub fn create_flag(
     flag_glyph: Glyph,
     stem_direction: StemDirection,
     metadata: &Metadata,
-) -> Element<StaffSpaces> {
-    let anchors = metadata.anchors.get(notehead_glyph);
+) -> Result<Element<StaffSpaces>> {
+    let anchors = metadata.anchors.try_get(notehead_glyph)?;
 
     let (x, y) = match stem_direction {
         StemDirection::Up => {
@@ -149,10 +154,10 @@ pub fn create_flag(
         StemDirection::Down => (x, stem_end),
     };
 
-    Element::Symbol(Symbol {
+    Ok(Element::Symbol(Symbol {
         origin: Coord { x, y },
         value: flag_glyph.codepoint(),
-    })
+    }))
 }
 
 pub fn create_stem(
@@ -162,8 +167,8 @@ pub fn create_stem(
     stem_direction: StemDirection,
     glyph: Glyph,
     metadata: &Metadata,
-) -> (StaffSpaces, Element<StaffSpaces>) {
-    let anchors = metadata.anchors.get(glyph);
+) -> Result<(StaffSpaces, Element<StaffSpaces>)> {
+    let anchors = metadata.anchors.try_get(glyph)?;
 
     let stem_thickness = metadata.engraving_defaults.stem_thickness();
     let (stem_end, stem_polygon) = match stem_direction {
@@ -203,5 +208,5 @@ pub fn create_stem(
         }
     };
 
-    (stem_end, Element::Polygon(stem_polygon))
+    Ok((stem_end, Element::Polygon(stem_polygon)))
 }

@@ -8,7 +8,10 @@ use super::{
     },
     Accidental, Duration,
 };
-use crate::render::{metadata_extensions::MetadataExtensions, Output, Render, StemDirection};
+use crate::{
+    render::{metadata_extensions::MetadataExtensions, Output, Render, StemDirection},
+    Result,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Chord {
@@ -157,9 +160,9 @@ impl Chord {
 }
 
 impl Render for Chord {
-    fn render(&self, x: StaffSpaces, metadata: &smufl::Metadata) -> crate::render::Output {
+    fn render(&self, x: StaffSpaces, metadata: &smufl::Metadata) -> Result<Output> {
         let glyph = self.duration.value.notehead_glyph();
-        let width = metadata.width_of(glyph);
+        let width = metadata.width_of(glyph)?;
 
         let stem_direction = self.stem_direction().unwrap_or(StemDirection::Up);
 
@@ -178,9 +181,10 @@ impl Render for Chord {
             })
             .collect::<Vec<_>>();
 
-        let mut leger_lines = create_leger_lines(x, notes.first().unwrap().0.y, glyph, metadata);
+        let mut leger_lines = create_leger_lines(x, notes.first().unwrap().0.y, glyph, metadata)?;
         elements.append(&mut leger_lines);
-        leger_lines = create_leger_lines(x, notes.last().unwrap().0.y, glyph, metadata);
+
+        let mut leger_lines = create_leger_lines(x, notes.last().unwrap().0.y, glyph, metadata)?;
         elements.append(&mut leger_lines);
 
         let mut accidentals = notes
@@ -191,7 +195,7 @@ impl Render for Chord {
                     create_accidental(x, note.y, glyph, metadata)
                 })
             })
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<_>>>()?;
         elements.append(&mut accidentals);
 
         if self.duration.value != duration::Value::Whole {
@@ -202,17 +206,18 @@ impl Render for Chord {
 
             let length = self.highest_note().y - self.lowest_note().y + DEFAULT_STEM_LENGTH;
 
-            let (stem_end, stem) = create_stem(x, start_y, length, stem_direction, glyph, metadata);
+            let (stem_end, stem) =
+                create_stem(x, start_y, length, stem_direction, glyph, metadata)?;
 
             if let Some(flag_glyph) = self.duration.value.flag_glyph(stem_direction) {
-                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata);
+                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata)?;
                 elements.push(flag);
             }
 
             elements.push(stem);
         }
 
-        Output { elements, width }
+        Ok(Output { elements, width })
     }
 }
 

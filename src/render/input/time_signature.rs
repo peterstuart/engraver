@@ -1,9 +1,12 @@
 use smufl::{Glyph, Metadata, StaffSpaces};
 
-use crate::render::{
-    ir::{Coord, Element, Symbol},
-    metadata_extensions::MetadataExtensions,
-    Output, Render,
+use crate::{
+    render::{
+        ir::{Coord, Element, Symbol},
+        metadata_extensions::MetadataExtensions,
+        Output, Render,
+    },
+    Result,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -51,7 +54,7 @@ impl TimeSignature {
         y: StaffSpaces,
         mut offset: StaffSpaces,
         metadata: &Metadata,
-    ) -> Vec<Element<StaffSpaces>> {
+    ) -> Result<Vec<Element<StaffSpaces>>> {
         let mut elements = Vec::with_capacity(glyphs.len());
 
         for glyph in glyphs {
@@ -62,25 +65,27 @@ impl TimeSignature {
                 value: glyph.codepoint(),
             }));
 
-            offset += metadata.width_of(*glyph);
+            offset += metadata.width_of(*glyph)?;
         }
 
-        elements
+        Ok(elements)
     }
 }
 
 impl Render for TimeSignature {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Output {
-        let numerator_width: StaffSpaces = self
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+        let numerator_widths = self
             .numerator_glyphs()
             .into_iter()
             .map(|glyph| metadata.width_of(glyph))
-            .sum();
-        let denominator_width = self
+            .collect::<Result<Vec<_>>>()?;
+        let numerator_width: StaffSpaces = numerator_widths.into_iter().sum();
+        let denominator_widths = self
             .denominator_glyphs()
             .into_iter()
             .map(|glyph| metadata.width_of(glyph))
-            .sum();
+            .collect::<Result<Vec<_>>>()?;
+        let denominator_width = denominator_widths.into_iter().sum();
 
         let width = numerator_width.max(denominator_width);
 
@@ -96,7 +101,7 @@ impl Render for TimeSignature {
             StaffSpaces(3.0),
             numerator_offset,
             metadata,
-        ));
+        )?);
 
         let denominator_offset = (width - denominator_width) / 2.0;
         elements.append(&mut Self::render_glyphs(
@@ -105,9 +110,9 @@ impl Render for TimeSignature {
             StaffSpaces(1.0),
             denominator_offset,
             metadata,
-        ));
+        )?);
 
-        Output { elements, width }
+        Ok(Output { elements, width })
     }
 }
 

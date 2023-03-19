@@ -1,9 +1,12 @@
 use smufl::{Glyph, Metadata, StaffSpaces};
 
-use crate::render::{
-    ir::{Coord, Element, Symbol},
-    metadata_extensions::MetadataExtensions,
-    Output, Render,
+use crate::{
+    render::{
+        ir::{Coord, Element, Symbol},
+        metadata_extensions::MetadataExtensions,
+        Output, Render,
+    },
+    Result,
 };
 
 const SPACE_AFTER_SYMBOL: StaffSpaces = StaffSpaces(0.1);
@@ -30,10 +33,10 @@ impl Kind {
 }
 
 impl Render for KeySignature {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Output {
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
         let glyph = self.kind.glyph();
         let codepoint = glyph.codepoint();
-        let symbol_width = metadata.width_of(glyph) + SPACE_AFTER_SYMBOL;
+        let symbol_width = metadata.width_of(glyph)? + SPACE_AFTER_SYMBOL;
 
         let elements = self
             .pitches
@@ -52,6 +55,6 @@ impl Render for KeySignature {
 
         let width = symbol_width * (self.pitches.len() as f64);
 
-        Output { elements, width }
+        Ok(Output { elements, width })
     }
 }

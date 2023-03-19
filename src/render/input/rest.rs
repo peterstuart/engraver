@@ -1,10 +1,13 @@
 use smufl::{Metadata, StaffSpaces};
 
 use super::Duration;
-use crate::render::{
-    ir::{Coord, Element, Symbol},
-    metadata_extensions::MetadataExtensions,
-    Output, Render,
+use crate::{
+    render::{
+        ir::{Coord, Element, Symbol},
+        metadata_extensions::MetadataExtensions,
+        Output, Render,
+    },
+    Result,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
@@ -13,7 +16,7 @@ pub struct Rest {
 }
 
 impl Render for Rest {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> crate::render::Output {
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
         let glyph = self.duration.value.rest_glyph();
 
         let element = Element::Symbol(Symbol {
@@ -23,11 +26,11 @@ impl Render for Rest {
             },
             value: glyph.codepoint(),
         });
-        let width = metadata.width_of(glyph);
+        let width = metadata.width_of(glyph)?;
 
-        Output {
+        Ok(Output {
             elements: vec![element],
             width,
-        }
+        })
     }
 }

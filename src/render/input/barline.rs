@@ -1,9 +1,12 @@
 use smufl::{Metadata, StaffSpaces};
 
-use crate::render::{
-    engraving_defaults_extensions::EngravingDefaultsExtensions,
-    ir::{Coord, Element, Line, Linecap},
-    Output, Render,
+use crate::{
+    render::{
+        engraving_defaults_extensions::EngravingDefaultsExtensions,
+        ir::{Coord, Element, Line, Linecap},
+        Output, Render,
+    },
+    Result,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -19,8 +22,8 @@ impl Default for Barline {
 }
 
 impl Render for Barline {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Output {
-        match self {
+    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+        Ok(match self {
             Self::Thin => {
                 let thickness = metadata.engraving_defaults.thin_barline_thickness();
                 let x = x + thickness / 2.0;
@@ -83,6 +86,6 @@ impl Render for Barline {
                     width: thin_thickness + separation + thick_thickness,
                 }
             }
-        }
+        })
     }
 }
