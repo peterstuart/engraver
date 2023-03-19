@@ -2,7 +2,7 @@ use std::ops::Add;
 
 use super::{Convert, Size};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Coord<T> {
     pub x: T,
     pub y: T,

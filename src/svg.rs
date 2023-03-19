@@ -1,7 +1,7 @@
 use smufl::StaffSpaces;
 use svg::node::element::SVG;
 
-use crate::render::ir::{Convert, Element, Line, Linecap, Rect, Symbol, Text};
+use crate::render::ir::{Convert, Element, Line, Linecap, Polygon, Symbol, Text};
 
 const SYMBOL_CLASS_NAME: &str = "symbol";
 const TEXT_CLASS_NAME: &str = "text";
@@ -68,7 +68,7 @@ pub fn elements_to_svg_document(
 fn add_element_to_document(element: Element<f64>, document: SVG) -> SVG {
     match element {
         Element::Line(line) => document.add::<svg::node::element::Line>(line.into()),
-        Element::Rect(rect) => document.add::<svg::node::element::Rectangle>(rect.into()),
+        Element::Polygon(polygon) => document.add::<svg::node::element::Polygon>(polygon.into()),
         Element::Symbol(symbol) => document.add::<svg::node::element::Text>(symbol.into()),
         Element::Text(text) => document.add::<svg::node::element::Text>(text.into()),
     }
@@ -116,13 +116,16 @@ impl From<Line<f64>> for svg::node::element::Line {
     }
 }
 
-impl From<Rect<f64>> for svg::node::element::Rectangle {
-    fn from(rect: Rect<f64>) -> Self {
-        svg::node::element::Rectangle::new()
-            .set("x", rect.origin.x)
-            .set("y", rect.origin.y)
-            .set("width", rect.size.width)
-            .set("height", rect.size.height)
+impl From<Polygon<f64>> for svg::node::element::Polygon {
+    fn from(polygon: Polygon<f64>) -> Self {
+        let points_as_strings: Vec<_> = polygon
+            .points()
+            .iter()
+            .map(|coord| format!("{},{}", coord.x, coord.y))
+            .collect();
+        let points = points_as_strings.join(", ");
+
+        svg::node::element::Polygon::new().set("points", points)
     }
 }
 

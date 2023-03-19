@@ -3,7 +3,7 @@ use smufl::{Glyph, Metadata, StaffSpaces};
 use super::{duration, Accidental, Duration};
 use crate::render::{
     engraving_defaults_extensions::EngravingDefaultsExtensions,
-    ir::{Coord, Element, Line, Linecap, Rect, Size, Symbol},
+    ir::{Coord, Element, Line, Linecap, Polygon, Size, Symbol},
     metadata_extensions::MetadataExtensions,
     stem_direction::StemDirection,
     Output, Render,
@@ -166,7 +166,7 @@ pub fn create_stem(
     let anchors = metadata.anchors.get(glyph);
 
     let stem_thickness = metadata.engraving_defaults.stem_thickness();
-    let (stem_end, stem_rect) = match stem_direction {
+    let (stem_end, stem_polygon) = match stem_direction {
         StemDirection::Up => {
             let se_anchor = anchors
                 .stem_up_se
@@ -182,7 +182,7 @@ pub fn create_stem(
                 height: length - se_anchor.y(),
             };
 
-            (y + length, Rect { origin, size })
+            (y + length, Polygon::rect(origin, size))
         }
         StemDirection::Down => {
             let nw_anchor = anchors
@@ -199,9 +199,9 @@ pub fn create_stem(
                 height: length + nw_anchor.y(),
             };
 
-            (y - length, Rect { origin, size })
+            (y - length, Polygon::rect(origin, size))
         }
     };
 
-    (stem_end, Element::Rect(stem_rect))
+    (stem_end, Element::Polygon(stem_polygon))
 }
