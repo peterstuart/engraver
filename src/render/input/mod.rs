@@ -5,14 +5,17 @@ pub mod measure;
 
 mod accidental;
 mod barline;
+mod beam;
 mod clef;
-mod note;
 mod rest;
 mod staff;
 mod time_signature;
 
+pub(crate) mod note;
+
 pub use accidental::Accidental;
 pub use barline::Barline;
+pub use beam::Beam;
 pub use chord::Chord;
 pub use clef::Clef;
 pub use duration::Duration;

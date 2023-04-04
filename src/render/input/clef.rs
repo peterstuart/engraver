@@ -2,6 +2,7 @@ use smufl::{Glyph, StaffSpaces};
 
 use crate::{
     render::{
+        context::Context,
         ir::{Coord, Element, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
@@ -16,7 +17,12 @@ pub struct Clef {
 }
 
 impl Render for Clef {
-    fn render(&self, x: StaffSpaces, metadata: &smufl::Metadata) -> Result<Output> {
+    fn render(
+        &self,
+        x: StaffSpaces,
+        _context: &mut Context,
+        metadata: &smufl::Metadata,
+    ) -> Result<Output> {
         Ok(Output {
             elements: vec![Element::Symbol(Symbol {
                 origin: Coord { x, y: self.y },

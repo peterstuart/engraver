@@ -2,6 +2,7 @@ use smufl::{Glyph, Metadata, StaffSpaces};
 
 use crate::{
     render::{
+        context::Context,
         ir::{Coord, Element, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
@@ -73,7 +74,12 @@ impl TimeSignature {
 }
 
 impl Render for TimeSignature {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+    fn render(
+        &self,
+        x: StaffSpaces,
+        _context: &mut Context,
+        metadata: &Metadata,
+    ) -> Result<Output> {
         let numerator_widths = self
             .numerator_glyphs()
             .into_iter()

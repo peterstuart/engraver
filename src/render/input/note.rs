@@ -1,30 +1,31 @@
 use smufl::{Glyph, Metadata, StaffSpaces};
 
-use super::{duration, Accidental, Duration};
+use super::{duration, Accidental, Beam, Duration};
 use crate::{
     render::{
+        context::{beam, Context},
         engraving_defaults_extensions::EngravingDefaultsExtensions,
         glyph_data_extensions::GlyphDataExtensions,
-        ir::{Coord, Element, Line, Linecap, Polygon, Size, Symbol},
+        ir::{Coord, Element, Line, Linecap, Symbol},
         metadata_extensions::MetadataExtensions,
-        stem_direction::StemDirection,
+        stem::{self, Stem},
         Output, Render,
     },
     Result,
 };
 
 pub const DEFAULT_ACCIDENTAL_SPACING: StaffSpaces = StaffSpaces(0.3);
-pub const DEFAULT_STEM_LENGTH: StaffSpaces = StaffSpaces(3.5);
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Note {
     pub y: StaffSpaces,
     pub accidental: Option<Accidental>,
     pub duration: Duration,
+    pub beam: Option<Beam>,
 }
 
 impl Render for Note {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+    fn render(&self, x: StaffSpaces, context: &mut Context, metadata: &Metadata) -> Result<Output> {
         let glyph = self.duration.value.notehead_glyph();
 
         let notehead = create_notehead(x, self.y, glyph);
@@ -40,33 +41,39 @@ impl Render for Note {
             elements.push(accidental);
         }
 
-        if self.duration.value != duration::Value::Whole {
-            let stem_direction = if self.y >= StaffSpaces(2.0) {
-                StemDirection::Down
-            } else {
-                StemDirection::Up
-            };
-
-            if let Some(flag_glyph) = self.duration.value.flag_glyph(stem_direction) {
-                let stem_end = match stem_direction {
-                    StemDirection::Up => self.y + DEFAULT_STEM_LENGTH,
-                    StemDirection::Down => self.y - DEFAULT_STEM_LENGTH,
-                };
-
-                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata)?;
-                elements.push(flag);
-            }
-
-            let (_, stem) = create_stem(
-                x,
-                self.y,
-                DEFAULT_STEM_LENGTH,
-                stem_direction,
+        match context.beam() {
+            Some(beam) => beam.add_notehead(beam::Notehead {
                 glyph,
-                metadata,
-            )?;
-            elements.push(stem);
-        }
+                x,
+                y: self.y,
+                min_stem_length: None,
+            }),
+            None => {
+                if self.duration.value != duration::Value::Whole {
+                    let stem_direction = if self.y >= StaffSpaces(2.0) {
+                        stem::Direction::Down
+                    } else {
+                        stem::Direction::Up
+                    };
+
+                    let stem = Stem::new(glyph, x, self.y, stem_direction, None);
+
+                    if let Some(flag_glyph) = self.duration.value.flag_glyph(stem_direction) {
+                        let flag = create_flag(
+                            x,
+                            stem.end(),
+                            glyph,
+                            flag_glyph,
+                            stem_direction,
+                            metadata,
+                        )?;
+                        elements.push(flag);
+                    }
+
+                    elements.push(stem.render(metadata)?);
+                }
+            }
+        };
 
         let width = metadata.width_of(glyph)?;
 
@@ -137,13 +144,13 @@ pub fn create_flag(
     stem_end: StaffSpaces,
     notehead_glyph: Glyph,
     flag_glyph: Glyph,
-    stem_direction: StemDirection,
+    stem_direction: stem::Direction,
     metadata: &Metadata,
 ) -> Result<Element<StaffSpaces>> {
     let anchors = metadata.anchors.try_get(notehead_glyph)?;
 
     let (x, y) = match stem_direction {
-        StemDirection::Up => {
+        stem::Direction::Up => {
             let se_anchor = anchors.stem_up_se.unwrap_or_else(|| {
                 panic!("{notehead_glyph:?} should have stem_up_se anchor defined")
             });
@@ -151,62 +158,11 @@ pub fn create_flag(
 
             (x + se_anchor.x() - stem_thickness, stem_end)
         }
-        StemDirection::Down => (x, stem_end),
+        stem::Direction::Down => (x, stem_end),
     };
 
     Ok(Element::Symbol(Symbol {
         origin: Coord { x, y },
         value: flag_glyph.codepoint(),
     }))
-}
-
-pub fn create_stem(
-    x: StaffSpaces,
-    y: StaffSpaces,
-    length: StaffSpaces,
-    stem_direction: StemDirection,
-    glyph: Glyph,
-    metadata: &Metadata,
-) -> Result<(StaffSpaces, Element<StaffSpaces>)> {
-    let anchors = metadata.anchors.try_get(glyph)?;
-
-    let stem_thickness = metadata.engraving_defaults.stem_thickness();
-    let (stem_end, stem_polygon) = match stem_direction {
-        StemDirection::Up => {
-            let se_anchor = anchors
-                .stem_up_se
-                .unwrap_or_else(|| panic!("{glyph:?} should have stem_up_se anchor defined"));
-
-            let origin = Coord {
-                x: x + se_anchor.x() - stem_thickness,
-                y: y + se_anchor.y(),
-            };
-
-            let size = Size {
-                width: stem_thickness,
-                height: length - se_anchor.y(),
-            };
-
-            (y + length, Polygon::rect(origin, size))
-        }
-        StemDirection::Down => {
-            let nw_anchor = anchors
-                .stem_down_nw
-                .unwrap_or_else(|| panic!("{glyph:?} should have stem_down_nw anchor defined"));
-
-            let origin = Coord {
-                x: x + nw_anchor.x(),
-                y: y - length,
-            };
-
-            let size = Size {
-                width: stem_thickness,
-                height: length + nw_anchor.y(),
-            };
-
-            (y - length, Polygon::rect(origin, size))
-        }
-    };
-
-    Ok((stem_end, Element::Polygon(stem_polygon)))
 }

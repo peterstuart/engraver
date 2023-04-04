@@ -2,6 +2,7 @@ use smufl::{Glyph, Metadata, StaffSpaces};
 
 use crate::{
     render::{
+        context::Context,
         ir::{Coord, Element, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
@@ -33,7 +34,12 @@ impl Kind {
 }
 
 impl Render for KeySignature {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+    fn render(
+        &self,
+        x: StaffSpaces,
+        _context: &mut Context,
+        metadata: &Metadata,
+    ) -> Result<Output> {
         let glyph = self.kind.glyph();
         let codepoint = glyph.codepoint();
         let symbol_width = metadata.width_of(glyph)? + SPACE_AFTER_SYMBOL;

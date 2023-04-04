@@ -49,6 +49,7 @@ fn main() -> Result<()> {
                         value: duration::Value::Whole,
                         dots: None,
                     },
+                    beam: None,
                 })],
                 ..Default::default()
             },
@@ -69,6 +70,7 @@ fn main() -> Result<()> {
                         y: ((index as f64) * 0.5).into(),
                         accidental: None,
                         duration: Duration { value, dots: None },
+                        beam: None,
                     })
                 })
                 .collect(),

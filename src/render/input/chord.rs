@@ -2,14 +2,16 @@ use smufl::StaffSpaces;
 
 use super::{
     duration,
-    note::{
-        create_accidental, create_flag, create_leger_lines, create_notehead, create_stem,
-        DEFAULT_STEM_LENGTH,
-    },
-    Accidental, Duration,
+    note::{create_accidental, create_flag, create_leger_lines, create_notehead},
+    Accidental, Beam, Duration,
 };
 use crate::{
-    render::{metadata_extensions::MetadataExtensions, Output, Render, StemDirection},
+    render::{
+        context::{beam, Context},
+        metadata_extensions::MetadataExtensions,
+        stem::{self, Stem},
+        Output, Render,
+    },
     Result,
 };
 
@@ -17,6 +19,7 @@ use crate::{
 pub struct Chord {
     notes: Vec<Note>,
     pub duration: Duration,
+    pub beam: Option<Beam>,
 }
 
 /// Which side of a stem a chord notehead should be drawn on.
@@ -24,14 +27,14 @@ pub struct Chord {
 enum Side {
     /// The default side of the stem.
     ///
-    /// (ie. left for [up](StemDirection::Up), right for
-    /// [down](StemDirection::Down))
+    /// (ie. left for [up](stem::Direction::Up), right for
+    /// [down](stem::Direction::Down))
     Default,
 
     /// The side opposite the default side.
     ///
-    /// (ie. right for [up][StemDirection::Up] left for
-    /// [down](StemDirection::Down))
+    /// (ie. right for [up][stem::Direction::Up] left for
+    /// [down](stem::Direction::Down))
     Opposite,
 }
 
@@ -41,7 +44,7 @@ impl Chord {
     /// # Panics
     ///
     /// The function will panic if `notes` does not contain at least 2 notes.
-    pub fn new<Notes>(notes: Notes, duration: Duration) -> Self
+    pub fn new<Notes>(notes: Notes, duration: Duration, beam: Option<Beam>) -> Self
     where
         Notes: IntoIterator<Item = Note>,
     {
@@ -55,7 +58,11 @@ impl Chord {
                 .expect("notes should always be orderable")
         });
 
-        Self { notes, duration }
+        Self {
+            notes,
+            duration,
+            beam,
+        }
     }
 
     /// Returns the preferred stem direction for the chord, if there is one.
@@ -72,7 +79,7 @@ impl Chord {
     /// > direction is best for visual clarity.
     ///
     /// [Gardner, p. 69](https://archive.org/details/musicnotationman00read/page/69)
-    fn stem_direction(&self) -> Option<StemDirection> {
+    fn stem_direction(&self) -> Option<stem::Direction> {
         const MIDDLE_STAFF_LINE: StaffSpaces = StaffSpaces(2.0);
 
         let lowest = self.lowest_note().y;
@@ -84,9 +91,9 @@ impl Chord {
         if lowest_distance_to_middle == highest_distance_to_middle {
             None
         } else if lowest_distance_to_middle > highest_distance_to_middle {
-            Some(StemDirection::Up)
+            Some(stem::Direction::Up)
         } else {
-            Some(StemDirection::Down)
+            Some(stem::Direction::Down)
         }
     }
 
@@ -100,11 +107,11 @@ impl Chord {
     /// > stem direction.
     ///
     /// [Gardner, p. 71](https://archive.org/details/musicnotationman00read/page/71)
-    fn notes(&self, stem_direction: StemDirection) -> Vec<(Note, Side)> {
+    fn notes(&self, stem_direction: stem::Direction) -> Vec<(Note, Side)> {
         let mut notes_with_sides = Vec::with_capacity(self.notes.len());
 
         match stem_direction {
-            StemDirection::Up => {
+            stem::Direction::Up => {
                 for (index, note) in self.notes.iter().copied().enumerate() {
                     if index == 0 {
                         notes_with_sides.push((note, Side::Default));
@@ -123,7 +130,7 @@ impl Chord {
                     notes_with_sides.push((note, side));
                 }
             }
-            StemDirection::Down => {
+            stem::Direction::Down => {
                 for (index, note) in self.notes.iter().copied().enumerate() {
                     if index == self.notes.len() - 1 {
                         notes_with_sides.push((note, Side::Default));
@@ -160,11 +167,20 @@ impl Chord {
 }
 
 impl Render for Chord {
-    fn render(&self, x: StaffSpaces, metadata: &smufl::Metadata) -> Result<Output> {
+    fn render(
+        &self,
+        x: StaffSpaces,
+        context: &mut Context,
+        metadata: &smufl::Metadata,
+    ) -> Result<Output> {
         let glyph = self.duration.value.notehead_glyph();
         let width = metadata.width_of(glyph)?;
 
-        let stem_direction = self.stem_direction().unwrap_or(StemDirection::Up);
+        let stem_direction = context
+            .beam()
+            .map(|beam| beam.stem_direction)
+            .or_else(|| self.stem_direction())
+            .unwrap_or(stem::Direction::Up);
 
         let notes = self.notes(stem_direction);
 
@@ -173,8 +189,8 @@ impl Render for Chord {
             .map(|(note, side)| {
                 let x = match (side, stem_direction) {
                     (Side::Default, _) => x,
-                    (Side::Opposite, StemDirection::Up) => x + width,
-                    (Side::Opposite, StemDirection::Down) => x - width,
+                    (Side::Opposite, stem::Direction::Up) => x + width,
+                    (Side::Opposite, stem::Direction::Down) => x - width,
                 };
 
                 create_notehead(x, note.y, glyph)
@@ -198,24 +214,41 @@ impl Render for Chord {
             .collect::<Result<Vec<_>>>()?;
         elements.append(&mut accidentals);
 
-        if self.duration.value != duration::Value::Whole {
-            let start_y = match stem_direction {
-                StemDirection::Up => self.lowest_note().y,
-                StemDirection::Down => self.highest_note().y,
-            };
-
-            let length = self.highest_note().y - self.lowest_note().y + DEFAULT_STEM_LENGTH;
-
-            let (stem_end, stem) =
-                create_stem(x, start_y, length, stem_direction, glyph, metadata)?;
-
-            if let Some(flag_glyph) = self.duration.value.flag_glyph(stem_direction) {
-                let flag = create_flag(x, stem_end, glyph, flag_glyph, stem_direction, metadata)?;
-                elements.push(flag);
-            }
-
-            elements.push(stem);
+        let start_y = match stem_direction {
+            stem::Direction::Up => self.lowest_note(),
+            stem::Direction::Down => self.highest_note(),
         }
+        .y;
+
+        let length = self.highest_note().y - self.lowest_note().y;
+
+        match context.beam() {
+            Some(beam) => beam.add_notehead(beam::Notehead {
+                glyph,
+                x,
+                y: start_y,
+                min_stem_length: Some(length),
+            }),
+            None => {
+                if self.duration.value != duration::Value::Whole {
+                    let stem = Stem::new(glyph, x, start_y, stem_direction, Some(length));
+
+                    if let Some(flag_glyph) = self.duration.value.flag_glyph(stem_direction) {
+                        let flag = create_flag(
+                            x,
+                            stem.end(),
+                            glyph,
+                            flag_glyph,
+                            stem_direction,
+                            metadata,
+                        )?;
+                        elements.push(flag);
+                    }
+
+                    elements.push(stem.render(metadata)?);
+                }
+            }
+        };
 
         Ok(Output { elements, width })
     }
@@ -245,6 +278,7 @@ mod tests {
                 value: duration::Value::Half,
                 dots: None,
             },
+            None,
         )
     }
 
@@ -292,21 +326,22 @@ mod tests {
                 value: duration::Value::Whole,
                 dots: None,
             },
+            None,
         );
     }
 
     // See Gardner, p. 69:
     // https://archive.org/details/musicnotationman00read/page/68
     #[rstest]
-    #[case::gardner_example_5_12_1(make_chord([4.5, 5.5]), Some(StemDirection::Down))]
-    #[case::gardner_example_5_12_2(make_chord([3.0, 5.0, 6.5]), Some(StemDirection::Down))]
-    #[case::gardner_example_5_12_3(make_chord([-1.5, -0.5, 0.5, 1.5]), Some(StemDirection::Up))]
-    #[case::gardner_example_5_12_4(make_chord([-1.0, 0.0, 1.0, 2.5]), Some(StemDirection::Up))]
+    #[case::gardner_example_5_12_1(make_chord([4.5, 5.5]), Some(stem::Direction::Down))]
+    #[case::gardner_example_5_12_2(make_chord([3.0, 5.0, 6.5]), Some(stem::Direction::Down))]
+    #[case::gardner_example_5_12_3(make_chord([-1.5, -0.5, 0.5, 1.5]), Some(stem::Direction::Up))]
+    #[case::gardner_example_5_12_4(make_chord([-1.0, 0.0, 1.0, 2.5]), Some(stem::Direction::Up))]
     #[case::gardner_example_5_12_5(make_chord([1.0, 2.0, 3.0]), None)]
     #[case::gardner_example_5_12_6(make_chord([-0.5, 2.0, 4.5]), None)]
     fn stem_direction(
         #[case] chord: Chord,
-        #[case] expected_stem_direction: Option<StemDirection>,
+        #[case] expected_stem_direction: Option<stem::Direction>,
     ) {
         assert_eq!(chord.stem_direction(), expected_stem_direction);
     }
@@ -316,47 +351,47 @@ mod tests {
     #[rstest]
     #[case(
         make_chord([0.0, 1.0, 2.0]),
-        StemDirection::Up,
+        stem::Direction::Up,
         make_notes_with_sides([(0.0, Side::Default), (1.0, Side::Default), (2.0, Side::Default)])
     )]
     #[case(
         make_chord([0.0, 1.0, 2.0]),
-        StemDirection::Down,
+        stem::Direction::Down,
         make_notes_with_sides([(2.0, Side::Default), (1.0, Side::Default), (0.0, Side::Default)])
     )]
     #[case(
         make_chord([2.0, 1.0, 0.0]),
-        StemDirection::Up,
+        stem::Direction::Up,
         make_notes_with_sides([(0.0, Side::Default), (1.0, Side::Default), (2.0, Side::Default)])
     )]
     #[case(
         make_chord([2.0, 1.0, 0.0]),
-        StemDirection::Down,
+        stem::Direction::Down,
         make_notes_with_sides([(2.0, Side::Default), (1.0, Side::Default), (0.0, Side::Default)])
     )]
     #[case::gardner_example_5_18_1(
         make_chord([1.5, 2.0]),
-        StemDirection::Up,
+        stem::Direction::Up,
         make_notes_with_sides([(1.5, Side::Default), (2.0, Side::Opposite)])
     )]
     #[case::gardner_example_5_18_3(
         make_chord([3.5, 4.0]),
-        StemDirection::Down,
+        stem::Direction::Down,
         make_notes_with_sides([(4.0, Side::Default), (3.5, Side::Opposite)])
     )]
     #[case::gardner_example_5_19_1(
         make_chord([-0.5, 0.5, 1.0, 2.0]),
-        StemDirection::Up,
+        stem::Direction::Up,
         make_notes_with_sides([(-0.5, Side::Default), (0.5, Side::Default), (1.0, Side::Opposite), (2.0, Side::Default)])
     )]
     #[case::gardner_example_5_19_3(
         make_chord([2.0, 3.0, 4.0, 4.5]),
-        StemDirection::Down,
+        stem::Direction::Down,
         make_notes_with_sides([(4.5, Side::Default), (4.0, Side::Opposite), (3.0, Side::Default), (2.0, Side::Default)])
     )]
     fn notes(
         #[case] chord: Chord,
-        #[case] stem_direction: StemDirection,
+        #[case] stem_direction: stem::Direction,
         #[case] expected_notes: Vec<(Note, Side)>,
     ) {
         assert_eq!(chord.notes(stem_direction), expected_notes);

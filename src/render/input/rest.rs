@@ -3,6 +3,7 @@ use smufl::{Metadata, StaffSpaces};
 use super::Duration;
 use crate::{
     render::{
+        context::Context,
         ir::{Coord, Element, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
@@ -16,7 +17,12 @@ pub struct Rest {
 }
 
 impl Render for Rest {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output> {
+    fn render(
+        &self,
+        x: StaffSpaces,
+        _context: &mut Context,
+        metadata: &Metadata,
+    ) -> Result<Output> {
         let glyph = self.duration.value.rest_glyph();
 
         let element = Element::Symbol(Symbol {

@@ -1,19 +1,20 @@
+pub mod context;
 pub mod input;
 pub mod ir;
+pub mod stem;
 
 mod engraving_defaults_extensions;
 mod glyph_data_extensions;
 mod math;
 mod metadata_extensions;
-mod stem_direction;
 
 use smufl::{Metadata, StaffSpaces};
 
-use self::{ir::Element, stem_direction::StemDirection};
+use self::{context::Context, ir::Element};
 use crate::Result;
 
 pub trait Render {
-    fn render(&self, x: StaffSpaces, metadata: &Metadata) -> Result<Output>;
+    fn render(&self, x: StaffSpaces, context: &mut Context, metadata: &Metadata) -> Result<Output>;
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +26,7 @@ pub struct Output {
 pub struct Renderer<'m> {
     elements: Vec<Element<StaffSpaces>>,
     position: StaffSpaces,
+    context: Context,
     metadata: &'m Metadata,
 }
 
@@ -33,6 +35,7 @@ impl<'m> Renderer<'m> {
         Self {
             elements: vec![],
             position: StaffSpaces::zero(),
+            context: Context::default(),
             metadata,
         }
     }
@@ -43,8 +46,12 @@ impl<'m> Renderer<'m> {
         self
     }
 
+    pub fn context(&mut self) -> &mut Context {
+        &mut self.context
+    }
+
     pub fn render<T: Render>(&mut self, render: &T) -> Result<&mut Self> {
-        let mut output = render.render(self.position, self.metadata)?;
+        let mut output = render.render(self.position, &mut self.context, self.metadata)?;
 
         self.elements.append(&mut output.elements);
         self.position += output.width;

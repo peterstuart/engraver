@@ -1,8 +1,8 @@
 use smufl::StaffSpaces;
 
-use super::{duration, Barline, Chord, Duration, Note, Rest};
+use super::{duration, Barline, Beam, Chord, Duration, Note, Rest};
 use crate::{
-    render::{Render, Renderer},
+    render::{context::Context, stem, Render, Renderer},
     Result,
 };
 
@@ -53,18 +53,27 @@ impl Element {
 
         BASE_SPACE * value_multiplier * dots_multiplier
     }
+
+    fn beam(&self) -> Option<Beam> {
+        match self {
+            Element::Note(note) => note.beam,
+            Element::Chord(chord) => chord.beam,
+            Element::Rest(_) => None,
+        }
+    }
 }
 
 impl Render for Element {
     fn render(
         &self,
         x: smufl::StaffSpaces,
+        context: &mut Context,
         metadata: &smufl::Metadata,
     ) -> Result<crate::render::Output> {
         match self {
-            Element::Note(note) => note.render(x, metadata),
-            Element::Chord(chord) => chord.render(x, metadata),
-            Element::Rest(rest) => rest.render(x, metadata),
+            Element::Note(note) => note.render(x, context, metadata),
+            Element::Chord(chord) => chord.render(x, context, metadata),
+            Element::Rest(rest) => rest.render(x, context, metadata),
         }
     }
 }
@@ -74,7 +83,17 @@ impl Measure {
         renderer.advance(BEGINNING_OF_MEASURE_SPACE);
 
         for element in &self.elements {
+            if element.beam() == Some(Beam::Begin) {
+                renderer.context().begin_beam(stem::Direction::Up)?;
+            }
+
             renderer.render(element)?;
+
+            if element.beam() == Some(Beam::End) {
+                let beam = renderer.context().end_beam()?;
+                renderer.render(&beam)?;
+            }
+
             renderer.advance(element.spacing());
         }
 
