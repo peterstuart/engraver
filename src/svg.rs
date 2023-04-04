@@ -83,6 +83,7 @@ fn style_element(options: &Options) -> svg::node::element::Style {
         r#"
 svg {{
   font-size: {font_size}px;
+  color: black;
 }}
 .{SYMBOL_CLASS_NAME} {{
   font-family: "{symbol_font_family}";
