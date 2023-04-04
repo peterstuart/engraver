@@ -18,6 +18,6 @@ jobs:
           rustup toolchain install nightly --allow-downgrade -c rustfmt
       - uses: Swatinem/rust-cache@v2
       - run: cargo +nightly fmt -- --check        
-      - run: cargo clippy -- -D warnings && cargo clippy --tests -- -D warnings
+      - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
       - run: RUSTDOCFLAGS='--deny warnings' cargo doc --no-deps
