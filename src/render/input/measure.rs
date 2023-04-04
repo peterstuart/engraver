@@ -13,7 +13,7 @@ const BASE_SPACE: StaffSpaces = StaffSpaces(8.0);
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Measure {
     pub elements: Vec<Element>,
-    pub bar_line: Barline,
+    pub barline: Barline,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -99,7 +99,7 @@ impl Measure {
 
         renderer.advance(END_OF_MEASURE_SPACE);
 
-        renderer.render(&self.bar_line)?;
+        renderer.render(&self.barline)?;
 
         Ok(())
     }

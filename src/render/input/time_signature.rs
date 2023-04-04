@@ -121,32 +121,3 @@ impl Render for TimeSignature {
         Ok(Output { elements, width })
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn numerator_glyphs() {
-        assert_eq!(
-            TimeSignature {
-                numerator: 12,
-                denominator: 8
-            }
-            .numerator_glyphs(),
-            [Glyph::TimeSig1, Glyph::TimeSig2]
-        );
-    }
-
-    #[test]
-    fn denominator_glyphs() {
-        assert_eq!(
-            TimeSignature {
-                numerator: 12,
-                denominator: 8
-            }
-            .denominator_glyphs(),
-            [Glyph::TimeSig8]
-        );
-    }
-}

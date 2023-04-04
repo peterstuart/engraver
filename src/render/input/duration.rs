@@ -1,4 +1,5 @@
 use smufl::Glyph;
+use strum_macros::EnumIter;
 
 use crate::render::stem;
 
@@ -8,7 +9,7 @@ pub struct Duration {
     pub dots: Option<Dots>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, EnumIter, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Value {
     Whole,
     Half,
@@ -57,7 +58,7 @@ impl Value {
     }
 }
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, EnumIter, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Dots {
     Dot,
     DoubleDot,

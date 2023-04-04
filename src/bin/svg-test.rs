@@ -93,7 +93,7 @@ fn main() -> Result<()> {
                     })
                 })
                 .collect(),
-                bar_line: Barline::Final,
+                barline: Barline::Final,
             },
         ],
     };

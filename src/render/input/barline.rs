@@ -1,4 +1,5 @@
 use smufl::{Metadata, StaffSpaces};
+use strum_macros::EnumIter;
 
 use crate::{
     render::{
@@ -10,7 +11,7 @@ use crate::{
     Result,
 };
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, EnumIter, Eq, PartialEq)]
 pub enum Barline {
     Thin,
     Final,

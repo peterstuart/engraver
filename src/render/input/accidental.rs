@@ -1,6 +1,7 @@
 use smufl::Glyph;
+use strum_macros::EnumIter;
 
-#[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, EnumIter, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Accidental {
     DoubleFlat,
     Flat,
