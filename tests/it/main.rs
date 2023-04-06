@@ -3,6 +3,7 @@ mod helpers;
 
 mod barlines;
 mod chords;
+mod clefs;
 mod key_signatures;
 mod notes;
 mod rests;
