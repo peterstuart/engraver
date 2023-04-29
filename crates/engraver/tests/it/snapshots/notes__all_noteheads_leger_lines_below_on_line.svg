@@ -1,0 +1,95 @@
+<svg height="100" width="322.5675" xmlns="http://www.w3.org/2000/svg">
+<style>
+
+svg {
+  font-size: 40px;
+  color: black;
+}
+.symbol {
+  font-family: "Bravura";
+  font-size: 1em;
+}
+.text {
+  font-family: "Academico, Century Schoolbook, Edwin, serif";
+  font-size: 10px;
+}
+
+</style>
+<text class="symbol" x="30" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="26" x2="50.88" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="26" x2="50.88" y1="95" y2="95"/>
+<text class="symbol" x="126.88" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="122.87999999999998" x2="142.67999999999998" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="122.87999999999998" x2="142.67999999999998" y1="95" y2="95"/>
+<polygon points="137.48,93.32000000000001, 138.67999999999998,93.32000000000001, 138.67999999999998,60, 137.48,60"/>
+<text class="symbol" x="178.67999999999998" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="174.68" x2="194.47999999999996" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="174.68" x2="194.47999999999996" y1="95" y2="95"/>
+<polygon points="189.27999999999997,93.32000000000001, 190.48,93.32000000000001, 190.48,60, 189.27999999999997,60"/>
+<text class="symbol" x="210.48" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="206.48" x2="226.27999999999997" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="206.48" x2="226.27999999999997" y1="95" y2="95"/>
+<text class="symbol" x="221.07999999999998" y="60">
+
+</text>
+<polygon points="221.07999999999998,93.32000000000001, 222.27999999999997,93.32000000000001, 222.27999999999997,60, 221.07999999999998,60"/>
+<text class="symbol" x="232.27999999999997" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="228.28" x2="248.07999999999996" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="228.28" x2="248.07999999999996" y1="95" y2="95"/>
+<text class="symbol" x="242.87999999999997" y="60">
+
+</text>
+<polygon points="242.87999999999997,93.32000000000001, 244.07999999999998,93.32000000000001, 244.07999999999998,60, 242.87999999999997,60"/>
+<text class="symbol" x="249.07999999999998" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="245.07999999999998" x2="264.87999999999994" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="245.07999999999998" x2="264.87999999999994" y1="95" y2="95"/>
+<text class="symbol" x="259.67999999999995" y="60">
+
+</text>
+<polygon points="259.67999999999995,93.32000000000001, 260.88,93.32000000000001, 260.88,60, 259.67999999999995,60"/>
+<text class="symbol" x="263.38" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="259.38" x2="279.17999999999995" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="259.38" x2="279.17999999999995" y1="95" y2="95"/>
+<text class="symbol" x="273.97999999999996" y="60">
+
+</text>
+<polygon points="273.97999999999996,93.32000000000001, 275.17999999999995,93.32000000000001, 275.17999999999995,60, 273.97999999999996,60"/>
+<text class="symbol" x="276.42999999999995" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="272.43" x2="292.22999999999996" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="272.43" x2="292.22999999999996" y1="95" y2="95"/>
+<text class="symbol" x="287.03" y="60">
+
+</text>
+<polygon points="287.03,93.32000000000001, 288.22999999999996,93.32000000000001, 288.22999999999996,60, 287.03,60"/>
+<text class="symbol" x="288.85499999999996" y="95">
+
+</text>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="284.85499999999996" x2="304.655" y1="85" y2="85"/>
+<line stroke="black" stroke-linecap="round" stroke-width="1.6" x1="284.85499999999996" x2="304.655" y1="95" y2="95"/>
+<text class="symbol" x="299.4549999999999" y="60">
+
+</text>
+<polygon points="299.4549999999999,93.32000000000001, 300.655,93.32000000000001, 300.655,60, 299.4549999999999,60"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.6" x1="321.7675" x2="321.7675" y1="75" y2="35"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.3" x1="0" x2="322.5675" y1="75" y2="75"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.3" x1="0" x2="322.5675" y1="65" y2="65"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.3" x1="0" x2="322.5675" y1="55" y2="55"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.3" x1="0" x2="322.5675" y1="45" y2="45"/>
+<line stroke="black" stroke-linecap="butt" stroke-width="1.3" x1="0" x2="322.5675" y1="35" y2="35"/>
+</svg>

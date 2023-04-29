@@ -1,0 +1,10 @@
+[package]
+name = "engraver-parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+color-eyre = "0.6.2"
+engraver = { path = "../engraver" }
+nom = "7.1.3"
+strum = "0.24.1"
