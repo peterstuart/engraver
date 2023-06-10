@@ -1,9 +1,9 @@
 [submodule "submodules/smufl"]
 	path = submodules/smufl
-	url = git@github.com:w3c/smufl.git
+	url = https://github.com/w3c/smufl.git
 [submodule "submodules/bravura"]
 	path = submodules/bravura
-	url = git@github.com:steinbergmedia/bravura.git
+	url = https://github.com/steinbergmedia/bravura.git
 [submodule "submodules/petaluma"]
 	path = submodules/petaluma
 	url = https://github.com/steinbergmedia/petaluma.git
