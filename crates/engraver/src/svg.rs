@@ -142,12 +142,11 @@ impl From<Polygon<f64>> for svg::node::element::Polygon {
 
 impl From<Symbol<f64>> for svg::node::element::Text {
     fn from(symbol: Symbol<f64>) -> Self {
-        let element = svg::node::element::Text::new()
+        svg::node::element::Text::new()
             .set("x", symbol.origin.x)
             .set("y", symbol.origin.y)
             .set("class", SYMBOL_CLASS_NAME)
-            .add(svg::node::Text::new(symbol.value));
-        element
+            .add(svg::node::Text::new(symbol.value))
     }
 }
 
