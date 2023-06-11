@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use engraver::{model, render::input};
 use smufl::StaffSpaces;
 
@@ -10,6 +11,7 @@ fn input_panics_with_no_notes() {
             value: input::duration::Value::Whole,
             dots: None,
         },
+        None,
         None,
     );
 }
@@ -27,6 +29,7 @@ fn input_panics_with_one_note() {
             dots: None,
         },
         None,
+        None,
     );
 }
 
@@ -39,6 +42,7 @@ fn model_panics_with_no_notes() {
             value: model::duration::Value::Whole,
             dots: None,
         },
+        None,
     );
 }
 
@@ -55,6 +59,7 @@ fn model_panics_with_one_note() {
             value: model::duration::Value::Whole,
             dots: None,
         },
+        None,
     );
 }
 
@@ -110,4 +115,40 @@ fn note_side_gardner_example_5_19_1() {
 #[test]
 fn note_side_gardner_example_5_19_3() {
     assert_staff_snapshot!("{b d5 f g} |")
+}
+
+#[test]
+fn chord_with_id() -> Result<()> {
+    let staff = input::Staff {
+        measures: vec![input::measure::Measure {
+            elements: vec![input::measure::Element::Chord(input::Chord::new(
+                [
+                    input::chord::Note {
+                        y: StaffSpaces(0.0),
+                        accidental: None,
+                    },
+                    input::chord::Note {
+                        y: StaffSpaces(1.0),
+                        accidental: None,
+                    },
+                    input::chord::Note {
+                        y: StaffSpaces(2.0),
+                        accidental: None,
+                    },
+                ],
+                input::Duration {
+                    value: input::duration::Value::Whole,
+                    dots: None,
+                },
+                None,
+                Some("test_chord".to_string()),
+            ))],
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    assert_staff_snapshot!(staff);
+
+    Ok(())
 }

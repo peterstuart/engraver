@@ -11,9 +11,10 @@ use crate::{
     Result,
 };
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Rest {
     pub duration: Duration,
+    pub id: Option<String>,
 }
 
 impl Render for Rest {
@@ -35,7 +36,10 @@ impl Render for Rest {
         let width = metadata.width_of(glyph)?;
 
         Ok(Output {
-            elements: vec![element],
+            elements: vec![Element::Group {
+                id: self.id.clone(),
+                elements: vec![element],
+            }],
             width,
         })
     }

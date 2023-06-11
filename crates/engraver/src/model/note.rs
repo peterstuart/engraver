@@ -1,10 +1,11 @@
 use super::{Context, Duration, Pitch};
 use crate::render;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Note {
     pub pitch: Pitch,
     pub duration: Duration,
+    pub id: Option<String>,
 }
 
 impl Note {
@@ -16,6 +17,7 @@ impl Note {
             accidental,
             duration: self.duration,
             beam: None,
+            id: self.id,
         }
     }
 }

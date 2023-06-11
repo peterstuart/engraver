@@ -6,6 +6,10 @@ pub enum Element<T> {
     Polygon(Polygon<T>),
     Symbol(Symbol<T>),
     Text(Text<T>),
+    Group {
+        id: Option<String>,
+        elements: Vec<Element<T>>,
+    },
 }
 
 impl<T> Element<T> {
@@ -15,6 +19,10 @@ impl<T> Element<T> {
             Self::Polygon(polyogn) => Element::Polygon(polyogn.convert(converter)),
             Self::Symbol(symbol) => Element::Symbol(symbol.convert(converter)),
             Self::Text(text) => Element::Text(text.convert(converter)),
+            Self::Group { id, elements } => Element::Group {
+                id,
+                elements: elements.into_iter().map(|e| e.convert(converter)).collect(),
+            },
         }
     }
 
@@ -27,6 +35,11 @@ impl<T> Element<T> {
             Element::Polygon(polygon) => polygon.max_x(),
             Element::Symbol(symbol) => symbol.max_x(),
             Element::Text(text) => text.max_x(),
+            Element::Group { elements, .. } => elements
+                .iter()
+                .map(|e| e.max_x())
+                .reduce(|a, b| if a > b { a } else { b })
+                .unwrap(),
         }
     }
 }

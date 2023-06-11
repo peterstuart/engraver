@@ -1,5 +1,4 @@
 use smufl::StaffSpaces;
-use svg::node::element::SVG;
 
 use crate::render::ir::{Convert, Element, Line, Linecap, Polygon, Symbol, Text};
 
@@ -61,17 +60,28 @@ pub fn elements_to_svg_document(
         .into_iter()
         .map(|element: Element<StaffSpaces>| element.convert(&converter))
         .fold(document, |document, element| {
-            add_element_to_document(element, document)
+            add_element_to_node(element, document)
         })
 }
 
-fn add_element_to_document(element: Element<f64>, document: SVG) -> SVG {
+fn add_element_to_node<N: svg::node::Node>(element: Element<f64>, mut node: N) -> N {
     match element {
-        Element::Line(line) => document.add::<svg::node::element::Line>(line.into()),
-        Element::Polygon(polygon) => document.add::<svg::node::element::Polygon>(polygon.into()),
-        Element::Symbol(symbol) => document.add::<svg::node::element::Text>(symbol.into()),
-        Element::Text(text) => document.add::<svg::node::element::Text>(text.into()),
+        Element::Line(line) => node.append::<svg::node::element::Line>(line.into()),
+        Element::Polygon(polygon) => node.append::<svg::node::element::Polygon>(polygon.into()),
+        Element::Symbol(symbol) => node.append::<svg::node::element::Text>(symbol.into()),
+        Element::Text(text) => node.append::<svg::node::element::Text>(text.into()),
+        Element::Group { id, elements } => {
+            let mut group = svg::node::element::Group::new();
+            if let Some(id) = id {
+                group = group.set("id", id);
+            }
+            for element in elements {
+                group = add_element_to_node(element, group);
+            }
+            node.append(group)
+        }
     }
+    node
 }
 
 fn style_element(options: &Options) -> svg::node::element::Style {
@@ -132,11 +142,12 @@ impl From<Polygon<f64>> for svg::node::element::Polygon {
 
 impl From<Symbol<f64>> for svg::node::element::Text {
     fn from(symbol: Symbol<f64>) -> Self {
-        svg::node::element::Text::new()
+        let element = svg::node::element::Text::new()
             .set("x", symbol.origin.x)
             .set("y", symbol.origin.y)
             .set("class", SYMBOL_CLASS_NAME)
-            .add(svg::node::Text::new(symbol.value))
+            .add(svg::node::Text::new(symbol.value));
+        element
     }
 }
 
