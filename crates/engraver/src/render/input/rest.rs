@@ -35,12 +35,19 @@ impl Render for Rest {
         });
         let width = metadata.width_of(glyph)?;
 
-        Ok(Output {
-            elements: vec![Element::Group {
-                id: self.id.clone(),
+        if self.id.is_some() {
+            Ok(Output {
+                elements: vec![Element::Group {
+                    id: self.id.clone(),
+                    elements: vec![element],
+                }],
+                width,
+            })
+        } else {
+            Ok(Output {
                 elements: vec![element],
-            }],
-            width,
-        })
+                width,
+            })
+        }
     }
 }

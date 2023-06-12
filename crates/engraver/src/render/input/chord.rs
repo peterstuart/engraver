@@ -257,13 +257,17 @@ impl Render for Chord {
             }
         };
 
-        Ok(Output {
-            elements: vec![Element::Group {
-                id: self.id.clone(),
-                elements,
-            }],
-            width,
-        })
+        if self.id.is_some() {
+            Ok(Output {
+                elements: vec![Element::Group {
+                    id: self.id.clone(),
+                    elements,
+                }],
+                width,
+            })
+        } else {
+            Ok(Output { elements, width })
+        }
     }
 }
 
