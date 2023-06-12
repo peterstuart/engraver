@@ -14,6 +14,7 @@ macro_rules! assert_notes_with_positions_snapshot {
                         accidental: None,
                         duration: Duration { value, dots: None },
                         beam: None,
+                        id: None,
                     })
                 })
                 .collect();
@@ -54,6 +55,7 @@ fn accidentals() -> Result<()> {
                     dots: None,
                 },
                 beam: None,
+                id: None,
             })
         })
         .collect();
@@ -61,6 +63,30 @@ fn accidentals() -> Result<()> {
     let staff = Staff {
         measures: vec![Measure {
             elements,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    assert_staff_snapshot!(staff);
+
+    Ok(())
+}
+
+#[test]
+fn note_with_id() -> Result<()> {
+    let staff = Staff {
+        measures: vec![Measure {
+            elements: vec![measure::Element::Note(Note {
+                y: StaffSpaces(0.0),
+                accidental: None,
+                duration: Duration {
+                    value: duration::Value::Whole,
+                    dots: None,
+                },
+                beam: None,
+                id: Some("test_note".to_string()),
+            })],
             ..Default::default()
         }],
         ..Default::default()

@@ -8,6 +8,7 @@ fn all() -> Result<()> {
         .map(|value| {
             measure::Element::Rest(Rest {
                 duration: Duration { value, dots: None },
+                id: None,
             })
         })
         .collect();
@@ -15,6 +16,27 @@ fn all() -> Result<()> {
     let staff = Staff {
         measures: vec![Measure {
             elements,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    assert_staff_snapshot!(staff);
+
+    Ok(())
+}
+
+#[test]
+fn rest_with_id() -> Result<()> {
+    let staff = Staff {
+        measures: vec![Measure {
+            elements: vec![measure::Element::Rest(Rest {
+                duration: Duration {
+                    value: duration::Value::Whole,
+                    dots: None,
+                },
+                id: Some("test_rest".to_string()),
+            })],
             ..Default::default()
         }],
         ..Default::default()

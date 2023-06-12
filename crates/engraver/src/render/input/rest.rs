@@ -4,16 +4,17 @@ use super::Duration;
 use crate::{
     render::{
         context::Context,
-        ir::{Coord, Element, Symbol},
+        ir::{Coord, Element, Group, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
     },
     Result,
 };
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Rest {
     pub duration: Duration,
+    pub id: Option<String>,
 }
 
 impl Render for Rest {
@@ -34,9 +35,19 @@ impl Render for Rest {
         });
         let width = metadata.width_of(glyph)?;
 
-        Ok(Output {
-            elements: vec![element],
-            width,
-        })
+        if self.id.is_some() {
+            Ok(Output {
+                elements: vec![Element::Group(Group {
+                    id: self.id.clone(),
+                    elements: vec![element],
+                })],
+                width,
+            })
+        } else {
+            Ok(Output {
+                elements: vec![element],
+                width,
+            })
+        }
     }
 }

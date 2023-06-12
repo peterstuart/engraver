@@ -8,9 +8,10 @@ use super::{
 use crate::{
     render::{
         context::{beam, Context},
+        ir::Group,
         metadata_extensions::MetadataExtensions,
         stem::{self, Stem},
-        Output, Render,
+        Element, Output, Render,
     },
     Result,
 };
@@ -20,6 +21,7 @@ pub struct Chord {
     notes: Vec<Note>,
     pub duration: Duration,
     pub beam: Option<Beam>,
+    pub id: Option<String>,
 }
 
 /// Which side of a stem a chord notehead should be drawn on.
@@ -44,7 +46,12 @@ impl Chord {
     /// # Panics
     ///
     /// The function will panic if `notes` does not contain at least 2 notes.
-    pub fn new<Notes>(notes: Notes, duration: Duration, beam: Option<Beam>) -> Self
+    pub fn new<Notes>(
+        notes: Notes,
+        duration: Duration,
+        beam: Option<Beam>,
+        id: Option<String>,
+    ) -> Self
     where
         Notes: IntoIterator<Item = Note>,
     {
@@ -62,6 +69,7 @@ impl Chord {
             notes,
             duration,
             beam,
+            id,
         }
     }
 
@@ -250,7 +258,17 @@ impl Render for Chord {
             }
         };
 
-        Ok(Output { elements, width })
+        if self.id.is_some() {
+            Ok(Output {
+                elements: vec![Element::Group(Group {
+                    id: self.id.clone(),
+                    elements,
+                })],
+                width,
+            })
+        } else {
+            Ok(Output { elements, width })
+        }
     }
 }
 

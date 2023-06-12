@@ -109,6 +109,7 @@ impl Note {
         model::Note {
             pitch: self.pitch.into_model(context),
             duration: context.duration,
+            id: None,
         }
     }
 }
@@ -132,6 +133,7 @@ impl Chord {
                 .map(|pitch| pitch.into_model(context))
                 .collect(),
             duration: context.duration,
+            id: None,
         }
     }
 }
@@ -149,6 +151,7 @@ impl Rest {
 
         model::Rest {
             duration: context.duration,
+            id: None,
         }
     }
 }

@@ -6,7 +6,7 @@ use crate::{
         context::{beam, Context},
         engraving_defaults_extensions::EngravingDefaultsExtensions,
         glyph_data_extensions::GlyphDataExtensions,
-        ir::{Coord, Element, Line, Linecap, Symbol},
+        ir::{Coord, Element, Group, Line, Linecap, Symbol},
         metadata_extensions::MetadataExtensions,
         stem::{self, Stem},
         Output, Render,
@@ -16,12 +16,13 @@ use crate::{
 
 pub const DEFAULT_ACCIDENTAL_SPACING: StaffSpaces = StaffSpaces(0.3);
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Note {
     pub y: StaffSpaces,
     pub accidental: Option<Accidental>,
     pub duration: Duration,
     pub beam: Option<Beam>,
+    pub id: Option<String>,
 }
 
 impl Render for Note {
@@ -77,7 +78,17 @@ impl Render for Note {
 
         let width = metadata.width_of(glyph)?;
 
-        Ok(Output { elements, width })
+        if self.id.is_some() {
+            Ok(Output {
+                elements: vec![Element::Group(Group {
+                    id: self.id.clone(),
+                    elements,
+                })],
+                width,
+            })
+        } else {
+            Ok(Output { elements, width })
+        }
     }
 }
 
