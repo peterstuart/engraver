@@ -1,6 +1,6 @@
 use smufl::StaffSpaces;
 
-use crate::render::ir::{Convert, Element, Line, Linecap, Polygon, Symbol, Text};
+use crate::render::ir::{Convert, Element, Group, Line, Linecap, Polygon, Symbol, Text};
 
 const SYMBOL_CLASS_NAME: &str = "symbol";
 const TEXT_CLASS_NAME: &str = "text";
@@ -70,7 +70,7 @@ fn add_element_to_node<N: svg::node::Node>(element: Element<f64>, mut node: N) -
         Element::Polygon(polygon) => node.append::<svg::node::element::Polygon>(polygon.into()),
         Element::Symbol(symbol) => node.append::<svg::node::element::Text>(symbol.into()),
         Element::Text(text) => node.append::<svg::node::element::Text>(text.into()),
-        Element::Group { id, elements } => {
+        Element::Group(Group { id, elements }) => {
             let mut group = svg::node::element::Group::new();
             if let Some(id) = id {
                 group = group.set("id", id);

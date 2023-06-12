@@ -6,7 +6,7 @@ use crate::{
         context::{beam, Context},
         engraving_defaults_extensions::EngravingDefaultsExtensions,
         glyph_data_extensions::GlyphDataExtensions,
-        ir::{Coord, Element, Line, Linecap, Symbol},
+        ir::{Coord, Element, Group, Line, Linecap, Symbol},
         metadata_extensions::MetadataExtensions,
         stem::{self, Stem},
         Output, Render,
@@ -80,10 +80,10 @@ impl Render for Note {
 
         if self.id.is_some() {
             Ok(Output {
-                elements: vec![Element::Group {
+                elements: vec![Element::Group(Group {
                     id: self.id.clone(),
                     elements,
-                }],
+                })],
                 width,
             })
         } else {

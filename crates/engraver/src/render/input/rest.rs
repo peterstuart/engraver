@@ -4,7 +4,7 @@ use super::Duration;
 use crate::{
     render::{
         context::Context,
-        ir::{Coord, Element, Symbol},
+        ir::{Coord, Element, Group, Symbol},
         metadata_extensions::MetadataExtensions,
         Output, Render,
     },
@@ -37,10 +37,10 @@ impl Render for Rest {
 
         if self.id.is_some() {
             Ok(Output {
-                elements: vec![Element::Group {
+                elements: vec![Element::Group(Group {
                     id: self.id.clone(),
                     elements: vec![element],
-                }],
+                })],
                 width,
             })
         } else {

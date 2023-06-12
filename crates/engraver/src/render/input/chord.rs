@@ -8,6 +8,7 @@ use super::{
 use crate::{
     render::{
         context::{beam, Context},
+        ir::Group,
         metadata_extensions::MetadataExtensions,
         stem::{self, Stem},
         Element, Output, Render,
@@ -259,10 +260,10 @@ impl Render for Chord {
 
         if self.id.is_some() {
             Ok(Output {
-                elements: vec![Element::Group {
+                elements: vec![Element::Group(Group {
                     id: self.id.clone(),
                     elements,
-                }],
+                })],
                 width,
             })
         } else {
