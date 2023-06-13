@@ -32,17 +32,10 @@ fn no_accidental_when_alteration_repeated() {
 
 #[test]
 fn accidental_when_alteration_repeated_over_barline() {
-    assert_staff_snapshot!("f# | f# |");
+    assert_staff_snapshot!("### f# a# b | f# a# b |");
 }
 
 #[test]
 fn accidental_canceled_in_next_bar() {
     assert_staff_snapshot!("f# | f |");
-}
-
-#[test]
-fn key_signature_alteration() -> Result<()> {
-    assert_staff_snapshot!("c d# e f | c d# e# f ||");
-
-    Ok(())
 }
