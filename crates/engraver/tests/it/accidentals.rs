@@ -1,5 +1,3 @@
-use color_eyre::eyre::Result;
-
 #[test]
 fn no_accidental_when_no_alteration_in_key_with_no_sharps() {
     assert_staff_snapshot!("f |");
