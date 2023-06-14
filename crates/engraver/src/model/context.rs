@@ -58,7 +58,11 @@ impl Context {
                 AccidentalState::NeedsAccidental
             }
             (_, Some(_)) => AccidentalState::NoAccidental,
-            (Some(_), None) => AccidentalState::NeedsAccidental,
+            (Some(previous_measure_alteration), None)
+                if pitch.alteration != *previous_measure_alteration =>
+            {
+                AccidentalState::NeedsAccidental
+            }
             _ if pitch.alteration != key_signature_alteration => AccidentalState::NeedsAccidental,
             _ => AccidentalState::NoAccidental,
         };
