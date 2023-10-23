@@ -8,7 +8,7 @@ smufl = "0.2.1"
 strum = "0.25.0"
 strum_macros = "0.25.2"
 svg = "0.13.1"
-thiserror = "1.0.48"
+thiserror = "1.0.50"
 tracing = "0.1.37"
 
 [dev-dependencies]      
