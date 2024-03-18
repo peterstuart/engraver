@@ -12,6 +12,6 @@ thiserror = "1.0.57"
 tracing = "0.1.40"
 
 [dev-dependencies]      
-color-eyre = "0.6.2"
+color-eyre = "0.6.3"
 engraver-parser = { path = "../engraver-parser" }
 once_cell = "1.19.0"
